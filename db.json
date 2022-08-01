@@ -1,0 +1,20 @@
+{
+  "moeda": [
+    {
+      "id": "AUD",
+      "text": "Dólar Australiano"
+    },
+    {
+      "id": "CAD",
+      "text": "Dólar Canadense"
+    },
+    {
+      "id": "EUR",
+      "text": "Euro"
+    },
+    {
+      "id": "USD",
+      "text": "Dólar dos Estados Unidos"
+    }
+  ]
+}
