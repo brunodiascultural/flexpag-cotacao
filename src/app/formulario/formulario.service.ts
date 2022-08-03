@@ -1,33 +1,40 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { Moeda } from './formulario';
-import { Cotacao } from './cotacao';
+import { HttpClient } from '@angular/common/http';
+import * as moment from 'moment';
+import { map, Observable } from 'rxjs';
+
+export interface CotationResponse {
+  cotacaoCompra: number;
+  cotacaoVenda: number;
+  dataHoraCotacao: string;
+}
+
+interface FullCotationResponse {
+  value: CotationResponse[];
+}
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class FormularioService {
+  constructor(private http: HttpClient) {}
 
-  private readonly API = 'http://localhost:3000/Moeda';
+  public getCurrencyCotation(
+    currency: string,
+    initialDate: string,
+    finalDate: string
+  ): Observable<CotationResponse[]> {
+    const initialDateFormated = moment(initialDate, 'YYYY-MM-DD').format(
+      'MM-DD-YYYY'
+    );
+    const finalDateFormated = moment(finalDate, 'YYYY-MM-DD').format(
+      'MM-DD-YYYY'
+    );
 
-  constructor(private http: HttpClient) { }
-
-  getMoeda() {
-    return this.http.get<Moeda[]>(this.API);
+    return this.http
+      .get<FullCotationResponse>(
+        `https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoMoedaPeriodo(moeda=@moeda,dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?@moeda=%27${currency}%27&@dataInicial=%27${initialDateFormated}%27&@dataFinalCotacao=%27${finalDateFormated}%27&$top=1000&$format=json&$select=cotacaoCompra,cotacaoVenda,dataHoraCotacao`
+      )
+      .pipe(map((data) => data.value));
   }
-
-  apiUrl = 'https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoMoedaPeriodo(moeda=@moeda,dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?@moeda=%27EUR%27&@dataInicial=%2707-06-2022%27&@dataFinalCotacao=%2707-25-2022%27&$top=1000&$format=json&$select=cotacaoCompra,cotacaoVenda,dataHoraCotacao';
-
-  httpOptions = {
-    headers: new HttpHeaders({
-      'Content-Type': 'application/json'
-    })
-  };
-
-  public getCotacao(flag: Cotacao): Observable<Cotacao[]> {
-    return this.http.get<Cotacao[]>(this.apiUrl + '?flag=' + flag);
-  }
-
-
 }

@@ -1,60 +1,65 @@
-<div class="container justify-content-center">
-  <div class="text-center m-5">
-    <h1>Histórico de Cotação</h1>
-  </div>
-  <form class="row border border-dark border-3 p-2">
-    <div class="col-3">
-      <div>
-        <label class="form-label" for="moeda">Moeda</label>
-        <select class="form-select" aria-label="Default select example" id="moeda">
-          <option selected>Selecione uma opção</option>
-          <option *ngFor="let moeda of moedas" [value]="moeda.id">{{ moeda.text }}</option>
-        </select>
-      </div>
-    </div>
-    <div class="col-3">
-      <div>
-        <label class="form-label" for="start-day">Dia Inicial</label>
-        <input type="date" class="form-control" id="startDay" name="start-day" required
-          pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}">
-      </div>\
-    </div>
-    <div class="col-3">
-      <div>
-        <label class="form-label" for="end-day">Dia Final</label>
-        <input type="date" class="form-control" id="endDay" name="end-day" required
-          pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}">
-      </div>
-    </div>
-    <div class="col-3 d-flex align-items-center">
-      <div class="row">
-        <div class="col">
-          <button type="button" class="btn btn-success">Consultar Dados</button>
-        </div>
-        <div class="col">
-          <button type="button" class="btn btn-primary">Atualizar Dados</button>
-        </div>
-      </div>
-    </div>
+<section class="container">
+  <header>
+    <h1>Histórico de cotação</h1>
+  </header>
+
+  <form [formGroup]="formulario" class="navbar navbar-light bg-light form-bar">
+
+    <label for="currency">
+      <span>Moeda</span>
+      <select formControlName="currency" class="form-select" id="currency" name="currency">
+        <option [value]="currency.id" *ngFor="let currency of currencies">{{ currency.text }}</option>
+      </select>
+    </label>
+
+    <label for="initialDate">
+      <span>Data Inicial</span>
+      <input formControlName="initialDate" type="date" class="form-control" id="initialDate" name="initialDate">
+      <span class="text-danger mt-1"
+        *ngIf="formulario.get('initialDate')?.errors?.['required'] && formulario.get('initialDate')?.touched">Escolha
+        uma data inicial</span>
+    </label>
+
+    <label for="finalDate">
+      <span>Data Final</span>
+      <input type="date" formControlName="finalDate" class="form-control" id="finalDate" name="finalDate">
+      <span class="text-danger mt-1"
+        *ngIf="formulario.get('finalDate')?.errors?.['required'] && formulario.get('finalDate')?.touched">Escolha
+        uma data final</span>
+      <span class="text-danger mt-1"
+        *ngIf="formulario.errors?.['isEndDateLowerThanInitialDate'] && (formulario.touched || formulario.dirty)">
+        Data final maior que data inicial</span>
+    </label>
+
+    <button *ngIf="!(data$)?.length" [disabled]="formulario.invalid" (click)="handleSubmit()"
+      class="btn btn-primary btn-lg"><span *ngIf="loading" class="spinner-border spinner-border-sm"></span>
+      Consultar</button>
+    <button *ngIf="(data$)?.length" [disabled]="formulario.invalid" (click)="handleSubmit()"
+      class="btn btn-success btn-lg"><span *ngIf="loading"
+        class="spinner-border spinner-border-sm"></span>Atualizar</button>
   </form>
-  <hr>
-  <div class="row border border-dark border-3 p-2">
+
+  <section class="navbar navbar-light bg-light main scrollbar" id="style-scroll">
     <table class="table table-striped">
       <thead>
         <tr>
-          <th scope="col">Cotação da compra</th>
-          <th scope="col">Cotação da venda</th>
+          <th scope="col">Cotação de Compra</th>
+          <th scope="col">Cotação de Venda</th>
           <th scope="col">Data e hora da cotação</th>
         </tr>
       </thead>
-
-      <tbody>
-        <tr *ngFor="let moedas">
-        <tr>
-          <td>{{ cotacao | json }}</td>
+      <tbody *ngIf="(data$)?.length">
+        <tr *ngFor="let b of data$">
+          <td>{{ b.cotacaoCompra | currency:'BRL'}}</td>
+          <td>{{ b.cotacaoVenda | currency:'BRL'}}</td>
+          <td>{{ b.dataHoraCotacao | date: 'dd/MM/yyyy HH:MM:SS '}}</td>
         </tr>
       </tbody>
     </table>
-  </div>
-</div>
-
+    <div *ngIf="!(data$)?.length" class="instruction">
+      <p>A cotação é o preço, ou valor, de uma moeda estrangeira. Este preço é estabelecido pelo mercado e pode sofrer
+        variações constantes. Para consultar o <strong>Histórico de cotação do Real</strong>, selecione a Moeda, a Data
+        inicial e a Data final. Obrigado :)</p>
+    </div>
+  </section>
+</section>
